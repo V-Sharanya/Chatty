@@ -11,3 +11,52 @@ export const getUsersForSidebar = async (req, res) => {
         res.status(500).json({ error: "Internal sever error"});
     }
 }
+
+export const getMessages = async (req,res) => {
+    try {
+        const { id:userToChatId } = req.params
+        const senderId = req.user._id
+
+        const messages = await Message.fing({
+            $or:[
+                {senderId:myId, receiverId:userToChatId},
+                {senderId:userToChatId, receiverId:myId}
+
+            ]
+        })
+
+        res.status(200).json(messages)
+    } catch (error) {
+        console.log("Error in getMessages controller", error.message);
+        res.status(500).json({ message : "Internal server error"})
+    }
+
+}
+
+export const sendMessages = async (req,res) => {
+    try {
+        const { text, image } = req.body;
+        const { id: receiverId } = req.params;
+        const senderId = req.user._id;
+
+        let imageUrl;
+        if (image) {
+            const uploadResponse = await cloudinary.uploader.upload(image)
+            imageUrl = uploadResponse.secure_url;
+        }
+
+        const newMessages = new Message({
+            senderId,
+            receiverId,
+            text,
+            image: imageUrl,
+        });
+
+        await newMessages.save();
+
+        res.status(201).json(newMessages);
+    } catch ( error ) {
+        console.log("Error in sendMessage controller: ", error.message);
+        res.status(500).json({ error: "Internal server error "})
+    }
+}
