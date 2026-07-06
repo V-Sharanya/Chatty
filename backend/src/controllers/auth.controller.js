@@ -60,9 +60,9 @@ export const login = async (req, res) => {
             return res.status(400).json({message:"Invalid credentials"})
         }
         
-        const isPoasswordCorrect = await bcrypt.compare(password, user.password);
+        const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
-        if (!isPoasswordCorrect) {
+        if (!isPasswordCorrect) {
             return res.status(400).json({ message: "Invalid Credentials"})
         }
 
@@ -100,7 +100,7 @@ export const updateProfile = async (req,res) => {
         }
 
         const uploadResource = await cloudinary.uploader.upload(profilePic);
-        const updatedUser = await User.findByIdAndUpdate(userId, {profilePic:uploadResponse.secure_url}, {new:true})
+        const updatedUser = await User.findByIdAndUpdate(userId, {profilePic:uploadResource.secure_url}, {new:true})
 
         res.status(200).json(updatedUser);
     } catch (error) {
@@ -111,7 +111,7 @@ export const updateProfile = async (req,res) => {
 
 export const checkAuth = (req,res) => {
     try {
-        res.status(200).json(req,res);
+        res.status(200).json(req.user);
     } catch ( error ) {
         console.log("Error in checkAuth controller", error.message);
         res.status(500).json({ message : "Internal server error"})
